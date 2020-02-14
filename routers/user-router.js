@@ -9,8 +9,9 @@ const {jwtSecret} = require('../auth/secrets')
 const router = express.Router();
 
 router.get('/users', restricted, async (req, res) => {
+  const token = req.headers.authorization
   try {
-      const users = await Users.getUsers()
+      const users = await Users.findAllBy({department: matchDepartment(token)})
       res.status(201).json(users)
   }
   catch(err) {
@@ -22,16 +23,17 @@ router.post('/login', (req, res) => {
   const { username, password } = req.body;
   Users.findBy({username})
     .then(user => {
+      console.log(user)
       if (user && bcrypt.compareSync(password, user.password)) {
 
         /* JWT auth */
-        // const token = generateToken(user)
+        const token = generateToken(user)
 
         /*For part 2 session*/
-        req.session.user=user
+        // req.session.user=user
         
         res.status(200).json({ message: `Welcome ${user.username}!`, 
-          // token: token 
+          token: token 
         });
       } else {
         res.status(401).json({ message: 'You shall not pass!' });
@@ -42,18 +44,8 @@ router.post('/login', (req, res) => {
     });
 }); 
 
-router.get('/logout',(req, res) => {
-  if(req.session)
-    req.session.destroy(err => {
-      if(err) {
-        res.json({ message: 'could not logout', error: err})
-      }
-      else
-        res.status(200).json({message: `Logout success`})
-    })
-  else {
-    res.status(400).json({message: 'Cannot logout. not currently logged in'})
-  }
+router.get('/logout', restricted, (req, res) => {
+    res.status(200).json({message: `Logout success`})
 })
 
 router.post('/register', verifyNewUser, async (req, res) => {
@@ -126,13 +118,29 @@ function verifyNewUser(req, res, next) {
 function generateToken(user) {
   const payload = {
     subject: user.id, //subject is renamed as sub when produced
-    username: user.username
+    username: user.username,
+    department: user.department
   }
   const secret = jwtSecret
   const options = {
     expiresIn: '1h'
   }
   return jwt.sign(payload, secret, options)
+}
+
+function matchDepartment (token) {
+  let dptment = null
+  if(token) {
+    jwt.verify(token, jwtSecret, (err, decodedToken)=> {
+        if(err) {
+          //do nothing
+        }
+        else {
+          dptment = decodedToken.department
+        }
+    })
+  }
+  return dptment
 }
 
 module.exports = router

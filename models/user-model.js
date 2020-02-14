@@ -5,6 +5,7 @@ const db = knex(knexConfig.development);
 module.exports = {
   getUsers,
   findBy,
+  findAllBy,
   add,
   remove,
   update
@@ -12,14 +13,20 @@ module.exports = {
 
 function getUsers() {
     return db('users')
-      .select('id', 'username')
+      .select('id', 'username', 'department')
 }
 
 function findBy(filter) {
     return db('users')
-      .select('id', 'username', 'password')
+      .select('id', 'username','password', 'department')
       .where(filter)
       .first()
+}
+
+function findAllBy(filter) {
+  return db('users')
+    .select('id', 'username','department')
+    .where(filter)
 }
 
 function add(user) {

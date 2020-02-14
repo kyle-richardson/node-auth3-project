@@ -6,8 +6,6 @@ function logger(req, res, next) {
         console.log(`body username: ${req.body.username}`)
     if(req.headers.username)
         console.log(`header username: ${req.headers.username}`)
-    if(req.session.user)
-        console.log(`session username: ${req.session.user.username}`)
   
     next();
   }
