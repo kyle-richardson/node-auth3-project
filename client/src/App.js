@@ -6,6 +6,8 @@ function App() {
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [token, setToken] = useState('')
+  const [userList, setUserList] = useState([])
 
   const handleChange = (event) => {
     const {name, value} = event.target
@@ -13,18 +15,25 @@ function App() {
     name==='password' && setPassword(value)
   }
 
-  const tryLogin = (event) => {
+  const tryLogin = async (event) => {
     event.preventDefault()
     const info = event.target
     const user = {
       username: info[0].value,
       password: info[1].value
     }
-    axios.post('http://localhost:5000/api/login', user)
-      .then(res => {
-        console.log(res)
-      })
-      .catch(err=> console.log(err))
+    try{
+      const tok = await axios.post('http://localhost:5000/api/login', user).then(res=>res.data.token)
+      setToken(tok)
+      setUserList(await axios({
+          method: 'get',
+          url: 'http://localhost:5000/api/users',
+          headers: {Authorization: tok}
+      }).then(res=> res.data))
+    }
+    catch(err) {
+      console.log(err)
+    }
   }
 
   return (
@@ -47,6 +56,15 @@ function App() {
         />
         <button>Log in</button>
       </form>
+      {!!userList && userList.map(user=> {
+        return (
+          <div key = {user.id} style={{padding: '10px', border: '2px solid blue', marginBottom: '10px'}}>
+            <p>id: {user.id}</p>
+            <p>username: {user.username}</p>
+            <p>department: {user.department}</p>
+          </div>
+        )
+      })}
     </div>
   );
 }
