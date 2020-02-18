@@ -9,6 +9,7 @@
     "server": "nodemon index.js"
   },
   "dependencies": {
+    "@material-ui/core": "^4.9.3",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

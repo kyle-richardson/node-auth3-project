@@ -1,22 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
+
+import DeleteUserDialog from "./DeleteUserDialog";
 
 function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState("");
+  const [user, setUser] = useState({});
   const [userList, setUserList] = useState([]);
   const [isSignup, setIsSignup] = useState(false);
   const [passwordVerify, setPasswordVerify] = useState("");
   const [errors, setErrors] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [forceUpdate, setForceUpdate] = useState(false);
 
   const handleChange = event => {
     const { name, value } = event.target;
     name === "username" && setUsername(value);
     name === "password" && setPassword(value);
     name === "passwordVerify" && setPasswordVerify(value);
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) login();
+  }, [forceUpdate]);
+
+  const login = async () => {
+    try {
+      const tok = await axios
+        .post("http://localhost:5000/api/login", user)
+        .then(res => res.data.token);
+      setToken(tok);
+      localStorage.setItem("token", tok);
+      setUserList(
+        await axios({
+          method: "get",
+          url: "http://localhost:5000/api/users",
+          headers: { Authorization: tok }
+        }).then(res => res.data)
+      );
+      setIsLoggedIn(true);
+      setErrors([]);
+    } catch (err) {
+      // console.warn(err.message);
+      setErrors(["invalid credentials"]);
+    }
   };
 
   const trySignup = async event => {
@@ -28,6 +58,7 @@ function App() {
       password: info[1].value,
       passwordVerify: info[2].value
     };
+    setUser(user);
 
     if (!user.username) tempErrors.push("username required");
     if (!user.password) tempErrors.push("password required");
@@ -55,29 +86,12 @@ function App() {
       username: obj && obj.username ? username : target[0].value,
       password: obj && obj.password ? password : target[1].value
     };
+    setUser(user);
     if (!user.username) tempErrors.push("username required");
     if (!user.password) tempErrors.push("password required");
     if (tempErrors.length > 0) setErrors([...new Set(tempErrors)]);
     else {
-      try {
-        const tok = await axios
-          .post("http://localhost:5000/api/login", user)
-          .then(res => res.data.token);
-        setToken(tok);
-        localStorage.setItem("token", tok);
-        setUserList(
-          await axios({
-            method: "get",
-            url: "http://localhost:5000/api/users",
-            headers: { Authorization: tok }
-          }).then(res => res.data)
-        );
-        setIsLoggedIn(true);
-        setErrors([]);
-      } catch (err) {
-        // console.warn(err.message);
-        setErrors(["invalid credentials"]);
-      }
+      login();
     }
   };
   const tryLogout = () => {
@@ -88,6 +102,11 @@ function App() {
     setPasswordVerify("");
     setIsSignup(false);
     setIsLoggedIn(false);
+    setUser({});
+  };
+
+  const refresh = () => {
+    setForceUpdate(!forceUpdate);
   };
 
   return (
@@ -167,6 +186,7 @@ function App() {
               <p>id: {user.id}</p>
               <p>username: {user.username}</p>
               <p>department: {user.department}</p>
+              <DeleteUserDialog id={user.id} refresh={refresh} />
             </div>
           );
         })}
