@@ -23,12 +23,7 @@ router.post("/login", (req, res) => {
   Users.findBy({ username })
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
-        /* JWT auth */
         const token = generateToken(user);
-
-        /*For part 2 session*/
-        // req.session.user=user
-
         res
           .status(200)
           .json({ message: `Welcome ${user.username}!`, token: token });
@@ -109,7 +104,7 @@ function verifyNewUser(req, res, next) {
 /* used for token auth */
 function generateToken(user) {
   const payload = {
-    subject: user.id, //subject is renamed as sub when produced
+    subject: user.id,
     username: user.username,
     department: user.department
   };
