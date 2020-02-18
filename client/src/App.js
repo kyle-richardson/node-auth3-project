@@ -42,7 +42,6 @@ function App() {
             password: user.password
           })
           .then(res => res.data);
-        console.log(newUser);
         tryLogin(newUser);
       } catch (err) {
         // console.warn(err.message);
@@ -86,6 +85,7 @@ function App() {
     setUserList([]);
     setUsername("");
     setPassword("");
+    setPasswordVerify("");
     setIsSignup(false);
     setIsLoggedIn(false);
   };
@@ -103,7 +103,7 @@ function App() {
           </p>
         ))}
       <form
-        className={isLoggedIn ? "hide" : null}
+        className={isLoggedIn ? "hide" : "form-container"}
         onSubmit={
           isSignup
             ? trySignup
@@ -112,7 +112,6 @@ function App() {
                 tryLogin(null, e.target);
               }
         }
-        style={{ marginBottom: "10px" }}
       >
         <input
           type="text"
@@ -120,6 +119,7 @@ function App() {
           name="username"
           value={username}
           onChange={handleChange}
+          style={{ width: "150px", margin: "5px 0 5px 0" }}
         />
         <input
           type="password"
@@ -127,6 +127,7 @@ function App() {
           name="password"
           value={password}
           onChange={handleChange}
+          style={{ width: "150px", margin: "5px 0 5px 0" }}
         />
         {isSignup && (
           <input
@@ -135,9 +136,12 @@ function App() {
             name="passwordVerify"
             value={passwordVerify}
             onChange={handleChange}
+            style={{ width: "150px", margin: "5px 0 5px 0" }}
           />
         )}
-        <button>{isSignup ? "Sign up" : "Log in"}</button>
+        <button style={{ width: "150px", margin: "5px 0 5px 0" }}>
+          {isSignup ? "Sign up" : "Log in"}
+        </button>
         <div
           className={isLoggedIn ? "hide" : null}
           onClick={() => {

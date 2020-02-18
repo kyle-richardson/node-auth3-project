@@ -44,3 +44,10 @@
 p {
   margin: 0;
 }
+
+.form-container {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

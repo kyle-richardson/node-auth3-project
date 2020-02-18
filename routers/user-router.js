@@ -22,7 +22,6 @@ router.post("/login", (req, res) => {
   const { username, password } = req.body;
   Users.findBy({ username })
     .then(user => {
-      console.log(user);
       if (user && bcrypt.compareSync(password, user.password)) {
         /* JWT auth */
         const token = generateToken(user);
@@ -49,7 +48,7 @@ router.get("/logout", restricted, (req, res) => {
 router.post("/register", verifyNewUser, async (req, res) => {
   const { username, password } = req.body;
   try {
-    const hash = await bcrypt.hashSync(password, 14);
+    const hash = bcrypt.hashSync(password, 14);
     const newUser = await Users.add({ username: username, password: hash });
     res.status(200).json(newUser);
   } catch {
@@ -90,12 +89,10 @@ function verifyChanges(req, res, next) {
   const changes = req.body;
   if (changes.username) next();
   else
-    res
-      .status(400)
-      .json({
-        message:
-          "username field required to make changes (even if it is not changed)"
-      });
+    res.status(400).json({
+      message:
+        "username field required to make changes (even if it is not changed)"
+    });
 }
 
 function verifyNewUser(req, res, next) {

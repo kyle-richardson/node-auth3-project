@@ -17,7 +17,7 @@ function getUsers() {
 
 function findBy(filter) {
   return db("users")
-    .select("id", "username", "department")
+    .select("id", "username", "password", "department")
     .where(filter)
     .first();
 }
