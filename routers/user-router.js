@@ -49,7 +49,7 @@ router.post("/register", verifyNewUser, async (req, res) => {
     const newUser = await Users.add({
       username: username,
       password: hash,
-      department: department
+      department: department.toLowerCase()
     });
     res.status(200).json(newUser);
   } catch {
@@ -70,16 +70,21 @@ router.delete("/users/:id", restricted, (req, res) => {
 
 router.put("/users/:id", restricted, verifyChanges, async (req, res) => {
   const { id } = req.params;
-  const { username, password } = req.body;
+  const { username, password, department } = req.body;
   try {
     let updatedUser;
     if (password) {
       const newPass = bcrypt.hashSync(password, 14);
       updatedUser = await Users.update(id, {
         username: username,
-        password: newPass
+        password: newPass,
+        department: department
       });
-    } else updatedUser = await Users.update(id, { username: username });
+    } else
+      updatedUser = await Users.update(id, {
+        username: username,
+        department: department
+      });
     res.status(200).json(updatedUser);
   } catch (err) {
     res.status(500).json({ message: "could not update user info", error: err });

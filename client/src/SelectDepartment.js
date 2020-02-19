@@ -10,6 +10,7 @@ const SelectDepartment = ({ department, handleChange }) => {
   React.useEffect(() => {
     setLabelWidth(inputLabel.current.offsetWidth);
   }, []);
+
   return (
     <>
       <FormControl variant="outlined" id="select-root">
@@ -19,7 +20,7 @@ const SelectDepartment = ({ department, handleChange }) => {
         <Select
           labelId="select-label"
           id="select-id"
-          value={department}
+          value={department || "student"}
           onChange={handleChange}
           name="department"
           margin="dense"

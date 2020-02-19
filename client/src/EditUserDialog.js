@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 import Button from "@material-ui/core/Button";
@@ -7,15 +7,10 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
-
-import Radio from "@material-ui/core/Radio";
-import RadioGroup from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
-
 import FormGroup from "@material-ui/core/FormGroup";
-
 import Checkbox from "@material-ui/core/Checkbox";
 
 import SelectDepartment from "./SelectDepartment";
@@ -35,6 +30,25 @@ const EditUserDialog = ({ user, refresh }) => {
     department: false
   });
 
+  useEffect(() => {
+    resetData();
+  }, []);
+
+  const resetData = () => {
+    setEditUser({
+      username: user.username,
+      password: "",
+      passwordVerify: "",
+      department: user.department
+    });
+    SetEditChoices({
+      username: false,
+      password: false,
+      department: false
+    });
+    setErrors([]);
+  };
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -45,6 +59,7 @@ const EditUserDialog = ({ user, refresh }) => {
 
   const handleChange = (event, type) => {
     if (type === "user") {
+      console.log(event.target);
       const { name, value } = event.target;
       setEditUser({ ...editUser, [name]: value });
     }
@@ -58,7 +73,7 @@ const EditUserDialog = ({ user, refresh }) => {
     if (editUser.password === editUser.passwordVerify) {
       const omitPass = {
         username: editUser.username,
-        department: editUser.department
+        department: editUser.department || "student"
       };
       try {
         await axios.put(
@@ -68,11 +83,9 @@ const EditUserDialog = ({ user, refresh }) => {
             headers: { Authorization: localStorage.getItem("token") }
           }
         );
+        resetData();
         handleClose();
         refresh();
-        setErrors([]);
-        setEditUser({});
-        SetEditChoices({ username: false, password: false, department: false });
       } catch (err) {
         console.log(err.message);
       }
@@ -138,7 +151,7 @@ const EditUserDialog = ({ user, refresh }) => {
           )}
           {editChoices.department && (
             <SelectDepartment
-              handleChange={handleChange}
+              handleChange={e => handleChange(e, "user")}
               department={editUser.department}
             />
           )}
