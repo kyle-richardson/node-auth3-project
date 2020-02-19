@@ -51,3 +51,13 @@ p {
   flex-direction: column;
   align-items: center;
 }
+
+#select-id {
+  width: 150px;
+}
+#select-root {
+  margin: 10px auto;
+}
+#select-inp-label {
+  vertical-align: middle;
+}
