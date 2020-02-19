@@ -8,7 +8,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
-const DeleteUserDialog = ({ id, refresh }) => {
+const DeleteUserDialog = ({ id, refresh, logout }) => {
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
@@ -24,7 +24,7 @@ const DeleteUserDialog = ({ id, refresh }) => {
       await axios.delete(`http://localhost:5000/api/users/${id}`, {
         headers: { Authorization: localStorage.getItem("token") }
       });
-      refresh();
+      logout();
     } catch (err) {
       console.log(err);
     }
@@ -32,7 +32,7 @@ const DeleteUserDialog = ({ id, refresh }) => {
 
   return (
     <div>
-      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
+      <Button variant="outlined" color="secondary" onClick={handleClickOpen}>
         Delete User
       </Button>
       <Dialog
@@ -59,7 +59,7 @@ const DeleteUserDialog = ({ id, refresh }) => {
               handleClose();
               tryDelete(id);
             }}
-            color="primary"
+            color="secondary"
             autoFocus
           >
             Delete

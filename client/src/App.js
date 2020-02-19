@@ -2,13 +2,21 @@ import React, { useState, useEffect } from "react";
 import "./App.css";
 import axios from "axios";
 
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+
 import DeleteUserDialog from "./DeleteUserDialog";
+import EditUserDialog from "./EditUserDialog";
 
 function App() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [token, setToken] = useState("");
-  const [user, setUser] = useState({});
+  const [department, setDepartment] = useState("");
+  const [currentId, setCurrentId] = useState("");
   const [userList, setUserList] = useState([]);
   const [isSignup, setIsSignup] = useState(false);
   const [passwordVerify, setPasswordVerify] = useState("");
@@ -21,44 +29,47 @@ function App() {
     name === "username" && setUsername(value);
     name === "password" && setPassword(value);
     name === "passwordVerify" && setPasswordVerify(value);
+    name === "department" && setDepartment(value);
   };
 
   useEffect(() => {
-    if (isLoggedIn) login();
+    if (isLoggedIn) updateUserList();
   }, [forceUpdate]);
 
-  const login = async () => {
+  const login = async user => {
     try {
-      const tok = await axios
+      const userData = await axios
         .post("http://localhost:5000/api/login", user)
-        .then(res => res.data.token);
-      setToken(tok);
-      localStorage.setItem("token", tok);
-      setUserList(
-        await axios({
-          method: "get",
-          url: "http://localhost:5000/api/users",
-          headers: { Authorization: tok }
-        }).then(res => res.data)
-      );
+        .then(res => res.data);
+      setCurrentId(userData.id);
+      localStorage.setItem("token", userData.token);
+      updateUserList();
       setIsLoggedIn(true);
       setErrors([]);
     } catch (err) {
-      // console.warn(err.message);
       setErrors(["invalid credentials"]);
     }
   };
 
+  const updateUserList = async () => {
+    setUserList(
+      await axios({
+        method: "get",
+        url: "http://localhost:5000/api/users",
+        headers: { Authorization: localStorage.getItem("token") }
+      }).then(res => res.data)
+    );
+  };
+
   const trySignup = async event => {
     event.preventDefault();
-    const info = event.target;
     const tempErrors = [];
     const user = {
-      username: info[0].value,
-      password: info[1].value,
-      passwordVerify: info[2].value
+      username: username,
+      password: password,
+      passwordVerify: passwordVerify,
+      department: department || null
     };
-    setUser(user);
 
     if (!user.username) tempErrors.push("username required");
     if (!user.password) tempErrors.push("password required");
@@ -70,7 +81,8 @@ function App() {
         const newUser = await axios
           .post("http://localhost:5000/api/register", {
             username: user.username,
-            password: user.password
+            password: user.password,
+            department: user.department
           })
           .then(res => res.data);
         tryLogin(newUser);
@@ -80,18 +92,17 @@ function App() {
       }
     }
   };
-  const tryLogin = async (obj, target) => {
+  const tryLogin = async obj => {
     const tempErrors = [];
     const user = {
-      username: obj && obj.username ? username : target[0].value,
-      password: obj && obj.password ? password : target[1].value
+      username: obj && obj.username ? username : username,
+      password: obj && obj.password ? password : password
     };
-    setUser(user);
     if (!user.username) tempErrors.push("username required");
     if (!user.password) tempErrors.push("password required");
     if (tempErrors.length > 0) setErrors([...new Set(tempErrors)]);
     else {
-      login();
+      login(user);
     }
   };
   const tryLogout = () => {
@@ -100,9 +111,9 @@ function App() {
     setUsername("");
     setPassword("");
     setPasswordVerify("");
+    setDepartment("");
     setIsSignup(false);
     setIsLoggedIn(false);
-    setUser({});
   };
 
   const refresh = () => {
@@ -128,39 +139,73 @@ function App() {
             ? trySignup
             : e => {
                 e.preventDefault();
-                tryLogin(null, e.target);
+                tryLogin();
               }
         }
       >
-        <input
-          type="text"
-          placeholder="username"
+        <TextField
+          id="outlined-name"
           name="username"
+          label="Name"
           value={username}
           onChange={handleChange}
-          style={{ width: "150px", margin: "5px 0 5px 0" }}
+          margin="dense"
+          variant="outlined"
+          required
         />
-        <input
-          type="password"
-          placeholder="password"
+
+        <TextField
+          id="outlined-password"
           name="password"
+          type="password"
+          label="Password"
           value={password}
           onChange={handleChange}
-          style={{ width: "150px", margin: "5px 0 5px 0" }}
+          margin="dense"
+          variant="outlined"
+          required
         />
+
         {isSignup && (
-          <input
-            type="password"
-            placeholder="verify password"
-            name="passwordVerify"
-            value={passwordVerify}
-            onChange={handleChange}
-            style={{ width: "150px", margin: "5px 0 5px 0" }}
-          />
+          <>
+            <TextField
+              id="outlined-password"
+              name="passwordVerify"
+              type="password"
+              label="Verify Password"
+              value={passwordVerify}
+              onChange={handleChange}
+              margin="dense"
+              variant="outlined"
+              required
+            />
+            <FormControl variant="outlined">
+              <InputLabel
+                // ref={inputLabel}
+                id="demo-simple-select-outlined-label"
+              >
+                Department
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-outlined-label"
+                id="demo-simple-select-outlined"
+                value={department}
+                onChange={handleChange}
+                name="department"
+                defaultValue="student"
+                autoWidth
+                margin="dense"
+              >
+                <MenuItem value={"student"}>Student</MenuItem>
+                <MenuItem value={"faculty"}>Faculty</MenuItem>
+                <MenuItem value={"admin"}>Admin</MenuItem>
+              </Select>
+            </FormControl>
+          </>
         )}
-        <button style={{ width: "150px", margin: "5px 0 5px 0" }}>
+        <Button variant="outlined" type="submit" color="primary">
           {isSignup ? "Sign up" : "Log in"}
-        </button>
+        </Button>
         <div
           className={isLoggedIn ? "hide" : null}
           onClick={() => {
@@ -180,13 +225,23 @@ function App() {
               style={{
                 padding: "10px",
                 border: "2px solid blue",
-                marginBottom: "10px"
+                marginBottom: "10px",
+                borderRadius: "4px"
               }}
             >
               <p>id: {user.id}</p>
               <p>username: {user.username}</p>
               <p>department: {user.department}</p>
-              <DeleteUserDialog id={user.id} refresh={refresh} />
+              {currentId === user.id && (
+                <>
+                  <EditUserDialog user={user} refresh={refresh} />
+                  <DeleteUserDialog
+                    id={user.id}
+                    refresh={refresh}
+                    logout={tryLogout}
+                  />
+                </>
+              )}
             </div>
           );
         })}
