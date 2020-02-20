@@ -73,7 +73,7 @@ const EditUserDialog = ({ user, refresh }) => {
     if (editUser.password === editUser.passwordVerify) {
       const omitPass = {
         username: editUser.username,
-        department: editUser.department || "student"
+        department: editUser.department.toLowerCase() || "student"
       };
       try {
         await axios.put(
@@ -97,7 +97,7 @@ const EditUserDialog = ({ user, refresh }) => {
   return (
     <div>
       <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        Edit User
+        Edit
       </Button>
       <Dialog
         open={open}

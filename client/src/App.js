@@ -25,7 +25,7 @@ function App() {
     name === "username" && setUsername(value);
     name === "password" && setPassword(value);
     name === "passwordVerify" && setPasswordVerify(value);
-    name === "department" && setDepartment(value.toLowerCase());
+    name === "department" && setDepartment(value);
   };
 
   useEffect(() => {

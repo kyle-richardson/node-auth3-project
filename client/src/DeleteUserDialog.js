@@ -33,7 +33,7 @@ const DeleteUserDialog = ({ id, logout }) => {
   return (
     <div>
       <Button variant="outlined" color="secondary" onClick={handleClickOpen}>
-        Delete User
+        Delete
       </Button>
       <Dialog
         open={open}
